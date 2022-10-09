@@ -24,8 +24,19 @@ public class Database {
         
         String result = null;
         
-        // INSERT YOUR CODE HERE
+        // New query for getSectionsAsJSON
+        String query = "SELECT * FROM section WHERE termid = ? AND subjectid = ? AND num = ?";
+
+        try {
+            PreparedStatement prepared = connection.prepareStatement(query);
+            prepared.setInt(1, termid);
+            prepared.setString(2, subjectid);
+            prepared.setString(3, num);
+            ResultSet rst = prepared.executeQuery();
+            result = getResultSetAsJSON(rst); 
+        }
         
+        catch (Exception e) { e.printStackTrace(); }
         return result;
         
     }
@@ -34,8 +45,18 @@ public class Database {
         
         int result = 0;
         
-        // INSERT YOUR CODE HERE
+        // New query for register
+        String query = "INSERT INTO registration (studentid, termid, crn) VALUES (?, ?, ?)";
+
+        try {
+            PreparedStatement prepared = connection.prepareStatement(query);
+            prepared.setInt(1, studentid);
+            prepared.setInt(2, termid);
+            prepared.setInt(3, crn);
+            result = prepared.executeUpdate();
+        }
         
+        catch (Exception e) { e.printStackTrace(); }
         return result;
         
     }
@@ -44,8 +65,18 @@ public class Database {
         
         int result = 0;
         
-        // INSERT YOUR CODE HERE
-        
+        // New query for drop
+        String query = "DELETE FROM registration WHERE studentid = ? AND termid = ? AND crn = ?";
+
+        try {
+            PreparedStatement prepared = connection.prepareStatement(query);
+
+            prepared.setInt(1, studentid);
+            prepared.setInt(2, termid);
+            prepared.setInt(3, crn);
+            result = prepared.executeUpdate();
+        } 
+        catch (Exception e) { e.printStackTrace(); }
         return result;
         
     }
@@ -54,8 +85,18 @@ public class Database {
         
         int result = 0;
         
-        // INSERT YOUR CODE HERE
-        
+        // New query for withdraw
+        String query = "DELETE FROM registration WHERE studentid = ? AND termid = ?";
+
+        try {
+            PreparedStatement prepared = connection.prepareStatement(query);
+
+            prepared.setInt(1, studentid);
+            prepared.setInt(2, termid);
+
+            result = prepared.executeUpdate();
+        } 
+        catch (Exception e) { e.printStackTrace(); }
         return result;
         
     }
@@ -64,8 +105,21 @@ public class Database {
         
         String result = null;
         
-        // INSERT YOUR CODE HERE
-        
+        // New query for getScheduleAsJSON
+        String query = "SELECT * FROM registration r JOIN section s on s.crn = r.crn"+ " WHERE r.studentid = ? AND r.termid = ?";
+
+        try {
+            PreparedStatement prepared = connection.prepareStatement(query);
+
+            prepared.setInt(1, studentid);
+            prepared.setInt(2, termid);
+
+            if(prepared.execute()){
+                ResultSet resultset = prepared.getResultSet();
+                result = getResultSetAsJSON(resultset); 
+            }
+        } 
+        catch (Exception e) { e.printStackTrace(); }
         return result;
         
     }
@@ -160,8 +214,18 @@ public class Database {
             ResultSetMetaData metadata = resultset.getMetaData();
             int columnCount = metadata.getColumnCount();
             
-            // INSERT YOUR CODE HERE
-        
+            //Populating the JSONarray
+            while(resultset.next()){
+                JSONObject obj = new JSONObject();
+                for (int i = 1; i <= columnCount; i++) {
+                    String key = metadata.getColumnName(i);
+                    String values = resultset.getString(i);
+
+                    keys.add(key);
+                    obj.put(key, values);
+                }
+                json.add(obj);
+            }
         }
         catch (Exception e) { e.printStackTrace(); }
         
